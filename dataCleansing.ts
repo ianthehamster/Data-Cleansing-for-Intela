@@ -1,6 +1,25 @@
 function main(workbook: ExcelScript.Workbook) {
+
     // Get the active sheet and table
     let sheet = workbook.getActiveWorksheet();
+
+    // Delete the first 4 rows only if it is a new workplan file
+    let cellA1Value = sheet.getRange("A1").getValue()
+    if(cellA1Value === "" || !cellA1Value){
+        sheet.getRange("1:4").delete(ExcelScript.DeleteShiftDirection.up)
+    }
+
+    // Remove all images in the worksheet
+    let shapes = sheet.getShapes()
+    for(let shape of shapes){
+      console.log(shape.getType())
+      if(shape.getType() === ExcelScript.ShapeType.image){
+        shape.delete()
+      }
+    }
+
+    return
+
     let table = sheet.getTables()[0];
 
     // Add 2 new columns after the 15th column
