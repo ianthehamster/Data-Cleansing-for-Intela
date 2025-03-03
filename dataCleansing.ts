@@ -40,10 +40,13 @@ function main(workbook: ExcelScript.Workbook) {
   
     let table = sheet.getTables()[0]
   
+    // Get the table headers from table
+    let headersOfCreatedTable: string[] = table.getHeaderRowRange().getValues()[0] as string[]
   
-    // Add 2 new columns after the 15th column
-    // table.addColumn(16);
-    // table.addColumn(17);
+    // Find the column index for Assignee
+    let assigneeColumnIndex = headersOfCreatedTable.findIndex(header=> header.trim().toLowerCase() === "assignee")
+  
+    console.log(assigneeColumnIndex, headersOfCreatedTable)
   
     // Get the range of the table
     let range = table.getRange();
@@ -55,6 +58,8 @@ function main(workbook: ExcelScript.Workbook) {
     // Process the "Assignee" column values
     let columnValues: (string | null)[][] = table.getColumnByName("Assignee").getRangeBetweenHeaderAndTotal().getValues() as (string | null)[][];
     let columnValuesCleansed: string[] = [];
+  
+    let assigneeColumnValuesDeloiteOnly: string[] = []
   
     for (let i = 0; i < columnValues.length; i++) {
       let value = columnValues[i][0];
@@ -108,16 +113,16 @@ function main(workbook: ExcelScript.Workbook) {
       return cleanedArray;
     }
   
-    columnValuesCleansedAndUnique = cleanData(columnValuesCleansedAndUnique)
+    assigneeColumnValuesDeloiteOnly = cleanData(columnValuesCleansedAndUnique)
   
-    console.log(columnValuesCleansedAndUnique)
+    console.log(assigneeColumnValuesDeloiteOnly)
   
-  return
+    
   
     // Process each assignee and filter the table based on their email
     columnValuesCleansedAndUnique.forEach(assigneeEmail => {
-      table.getAutoFilter().apply(table.getAutoFilter().getRange(), 6, { filterOn: ExcelScript.FilterOn.values, values: [assigneeEmail] });
-      table.getAutoFilter().apply(table.getAutoFilter().getRange(), 5, { filterOn: ExcelScript.FilterOn.values, values: ["Overdue"] });
+      table.getAutoFilter().apply(table.getAutoFilter().getRange(), 12, { filterOn: ExcelScript.FilterOn.values, values: [assigneeEmail] });
+      table.getAutoFilter().apply(table.getAutoFilter().getRange(), 8, { filterOn: ExcelScript.FilterOn.values, values: ["Not Started"] });
   
       let filteredRange = table.getRange().getVisibleView().getValues();
   
@@ -130,7 +135,7 @@ function main(workbook: ExcelScript.Workbook) {
       const newTable = newSheet.addTable(assigneesData, true);
       table.getAutoFilter().apply(table.getRange());
     });
-  
+    return
     // Split the values in the "Assignee" column if they contain a semicolon and add new rows
     for (let i = 1; i < values1.length; i++) {
       let currentRow = values1[i];
