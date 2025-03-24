@@ -84,4 +84,34 @@ function main(workbook: ExcelScript.Workbook) {
         }
        
     });
+
+  const sheets = workbook.getWorksheets();
+  const keepSheets = ["Workplan_Tasks", "Deloitte Only"];
+
+  for (let sheet of sheets) {
+    const name = sheet.getName();
+    if (keepSheets.includes(name)) {
+      sheet.delete();
+    }
+  }
+
+  let updatedSheets = workbook.getWorksheets()
+
+
+  updatedSheets.forEach(sheet => {
+    let originalName = sheet.getName()
+
+    if (originalName.includes('@')) {
+      let newName = originalName.split('@')[0].trim()
+      sheet.setName(newName)
+      let tables = sheet.getTables()
+
+      if (tables.length > 0) {
+        tables[0].setName(newName)
+
+      }
+    }
+
+  })
+
 }
