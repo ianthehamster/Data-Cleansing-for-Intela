@@ -25,6 +25,10 @@ function main(workbook: ExcelScript.Workbook) {
     let assigneeColumnIndex = table.getHeaderRowRange().getValues()[0]
         .findIndex(header => header.trim().toLowerCase() === "assignee");
 
+    let statusColumnIndex = table.getHeaderRowRange().getValues()[0]
+    .findIndex(header => header.trim().toLowerCase() === "status");
+        
+
     if (assigneeColumnIndex === -1) return;
 
     let rows = table.getRangeBetweenHeaderAndTotal().getValues();
@@ -64,13 +68,19 @@ function main(workbook: ExcelScript.Workbook) {
 
         if(!assignee.includes(':') && assignee.length < 30){
           
-            let assigneeRows = filteredRows.filter(row => row[assigneeColumnIndex] === assignee);
+            let assigneeRows = filteredRows.filter(row => row[assigneeColumnIndex] === assignee &&
+              row[statusColumnIndex]?.toString().toLowerCase() === 'not started'
+            );
 
-            let assigneeSheet = workbook.addWorksheet(assignee);
-            assigneeSheet.getRange("A1").getResizedRange(0, headers.length - 1).setValues([headers]);
 
-            assigneeSheet.getRange("A2").getResizedRange(assigneeRows.length - 1, headers.length - 1).setValues(assigneeRows);
-            assigneeSheet.addTable(assigneeSheet.getUsedRange(), true);
+            if(assigneeRows.length > 0){
+              let assigneeSheet = workbook.addWorksheet(assignee);
+              assigneeSheet.getRange("A1").getResizedRange(0, headers.length - 1).setValues([headers]);
+
+              assigneeSheet.getRange("A2").getResizedRange(assigneeRows.length - 1, headers.length - 1).setValues(assigneeRows);
+              assigneeSheet.addTable(assigneeSheet.getUsedRange(), true);
+            }
+            
         }
        
     });
