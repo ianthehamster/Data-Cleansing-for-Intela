@@ -3,6 +3,7 @@ function main(workbook: ExcelScript.Workbook) {
     const summarySheet = workbook.getWorksheet("Summary")
     const summaryRange = summarySheet.getUsedRange()
     const summaryValues = summaryRange.getValues()
+    let sheetCountExceptForSummaryAndHiddenSheets = 0
 
     // Build a mapping from sheet name (column D) to Entity Code (B) and Entity Name (E)
     const sheetMetadata = new Map<string, { code:string, name: string}>()
@@ -31,6 +32,8 @@ function main(workbook: ExcelScript.Workbook) {
         if(!meta){
             console.log(`No metadata found for sheet ${sheetName}`)
             continue
+        } else {
+            sheetCountExceptForSummaryAndHiddenSheets++
         }
 
         const dataRange = sheet.getRange(`B10:E${sheet.getUsedRange().getRowCount() + 10}`)
@@ -53,9 +56,23 @@ function main(workbook: ExcelScript.Workbook) {
         }
 
     }
-
+    console.log(sheetCountExceptForSummaryAndHiddenSheets)
     // Output to a new worksheet
     const outputSheet = workbook.addWorksheet("Trial Balance Output")
     outputSheet.getRangeByIndexes(0,0, trialBalance.length, 5).setValues(trialBalance)
+
+    // Clean column D (Account Name)
+    const accountNameRange = outputSheet.getRangeByIndexes(1, 3, trialBalance.length - 1, 1)
+    const accountNameValues = accountNameRange.getValues()
+
+    for(let i = 0; i < accountNameValues.length; i++){
+        const rawName = accountNameValues[i][0] as string
+        if(rawName){
+            const cleaned = rawName.replace(/^\s*([0-9A-Za-z]+)/, ""); // Match alphanumeric characters starting chunk
+            accountNameValues[i][0] = cleaned
+        }
+    }
+
+    accountNameRange.setValues(accountNameValues)
 
 }
